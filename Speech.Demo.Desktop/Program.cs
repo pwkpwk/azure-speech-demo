@@ -16,8 +16,9 @@
                 using (RecognitionDemo recognition = new RecognitionDemo(args[0], args[1], args[2]))
                 {
                     recognition.Start();
-                    Console.WriteLine("Press any key to stop the demo.");
+                    Console.Out.WriteLine("Press any key to stop the demo.");
                     Console.ReadKey();
+                    Console.Out.WriteLine("\r\nTerminating...");
                     recognition.Stop();
                 }
             }

@@ -5,6 +5,7 @@
     using Microsoft.CognitiveServices.Speech;
     using Microsoft.CognitiveServices.Speech.Audio;
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Text;
 
@@ -105,8 +106,14 @@
                     break;
 
                 case ResultReason.RecognizedSpeech:
-                    Console.Out.WriteLine(e.Result.Text);
-                    _transcript.WriteLine(e.Result.Text);
+                    foreach (DetailedSpeechRecognitionResult result in SpeechRecognitionResultExtensions.Best(e.Result))
+                    {
+                        string confidence = result.Confidence.ToString("F2");
+                        string text = $"{confidence}|{result.Text}";
+                        Trace.WriteLine(text);
+                        _transcript.WriteLine(text);
+                        Console.Out.WriteLine(text);
+                    }
                     _transcript.WriteLine();
                     _transcript.Flush();
                     break;
