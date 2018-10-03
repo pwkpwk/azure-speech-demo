@@ -6,6 +6,7 @@
     using Microsoft.CognitiveServices.Speech.Audio;
     using System;
     using System.IO;
+    using System.Text;
 
     sealed class RecognitionDemo : IDisposable
     {
@@ -13,7 +14,8 @@
         private readonly SpeechRecognizer _recognizer;
         private readonly PushAudioInputStream _audioInput;
         private readonly AudioCaptureDevice _audioCapture;
-        private readonly Stream _dump;
+        private readonly Stream _audio;
+        private readonly TextWriter _transcript;
 
         public RecognitionDemo(string region, string key, string locale)
         {
@@ -24,7 +26,8 @@
             _audioInput = CreateAudioInputStream();
             _recognizer = new SpeechRecognizer(config, AudioConfig.FromStreamInput(_audioInput));
             _audioCapture = CreateAudioCaptureDevice();
-            _dump = new FileStream("dump.raw", FileMode.Create);
+            _audio = new FileStream("audio.raw", FileMode.Create);
+            _transcript = new StreamWriter(new FileStream("transcript.txt", FileMode.Create), Encoding.UTF8);
         }
 
         // This code added to correctly implement the disposable pattern.
@@ -62,7 +65,8 @@
                 {
                     _recognizer.Dispose();
                     _audioCapture.Dispose();
-                    _dump.Dispose();
+                    _audio.Dispose();
+                    _transcript.Dispose();
                 }
 
                 _disposed = true;
@@ -88,7 +92,8 @@
         private void OnAudioFrameCaptured(object sender, NewFrameEventArgs e)
         {
             _audioInput.Write(e.Signal.RawData);
-            _dump.Write(e.Signal.RawData, 0, e.Signal.RawData.Length);
+            _audio.Write(e.Signal.RawData, 0, e.Signal.RawData.Length);
+            _audio.Flush();
         }
 
         private void OnSpeechRecognized(object sender, SpeechRecognitionEventArgs e)
@@ -96,11 +101,14 @@
             switch (e.Result.Reason)
             {
                 case ResultReason.RecognizingSpeech:
-                    Console.Out.Write($"{e.Result.Text} <--\r");
+                    Console.Out.Write($"[{e.Result.Text.Length}]\r");
                     break;
 
                 case ResultReason.RecognizedSpeech:
-                    Console.Out.WriteLine($"{e.Result.Text} <<--");
+                    Console.Out.WriteLine(e.Result.Text);
+                    _transcript.WriteLine(e.Result.Text);
+                    _transcript.WriteLine();
+                    _transcript.Flush();
                     break;
             }
         }
