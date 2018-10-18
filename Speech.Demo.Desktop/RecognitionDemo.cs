@@ -12,12 +12,16 @@
 
     sealed class RecognitionDemo : IDisposable
     {
+        private static readonly int SamplesPerMillisecond = 16;
+
         private bool _disposed;
         private readonly SpeechRecognizer _recognizer;
         private readonly PushAudioInputStream _audioInput;
         private readonly AudioCaptureDevice _audioCapture;
+        private readonly int _millisecondsPerFrame;
         private readonly Stream _audio;
         private readonly TextWriter _transcript;
+        private readonly Stopwatch _stopwatch;
 
         private int _framesCaptured;
         private int _intermediateResultsReceived;
@@ -25,9 +29,10 @@
         private int _identicalResults;
         private string _lastResult;
 
-        public RecognitionDemo(string region, string key, string locale)
+        public RecognitionDemo(string region, string key, string locale, int millisecondsPerFrame)
         {
             _disposed = false;
+            _millisecondsPerFrame = millisecondsPerFrame;
             SpeechConfig config = SpeechConfig.FromSubscription(key, region);
             config.SpeechRecognitionLanguage = locale;
             config.OutputFormat = OutputFormat.Detailed;
@@ -36,6 +41,7 @@
             _audioCapture = CreateAudioCaptureDevice();
             _audio = new FileStream("audio.raw", FileMode.Create);
             _transcript = new StreamWriter(new FileStream("transcript.txt", FileMode.Create), Encoding.UTF8);
+            _stopwatch = new Stopwatch();
 
             _framesCaptured = 0;
             _intermediateResultsReceived = 0;
@@ -55,21 +61,28 @@
         public int IntermediateResultsReceived { get { return _intermediateResultsReceived; } }
         public int FinalResultsReceived { get { return _finalResultsReceived; } }
         public int IdenticalResultsReceived { get { return _identicalResults; } }
+        public long ElapsedMilliseconds { get { return _stopwatch.ElapsedMilliseconds; } }
 
         public void Start()
         {
             _recognizer.Recognizing += OnSpeechRecognized;
             _recognizer.Recognized += OnSpeechRecognized;
+            _recognizer.SpeechStartDetected += OnSpeechStartDetected;
+            _recognizer.Canceled += OnRecognitionCancelled;
 
             _recognizer.StartContinuousRecognitionAsync().Wait();
             _audioCapture.NewFrame += OnAudioFrameCaptured;
             _audioCapture.Start();
+            _stopwatch.Start();
         }
 
         public void Stop()
         {
+            _stopwatch.Stop();
             _recognizer.Recognizing -= OnSpeechRecognized;
             _recognizer.Recognized -= OnSpeechRecognized;
+            _recognizer.SpeechStartDetected -= OnSpeechStartDetected;
+            _recognizer.Canceled -= OnRecognitionCancelled;
             _audioCapture.NewFrame -= OnAudioFrameCaptured;
             _audioCapture.SignalToStop();
             _audioCapture.WaitForStop();
@@ -94,7 +107,7 @@
 
         private PushAudioInputStream CreateAudioInputStream()
         {
-            return AudioInputStream.CreatePushStream(AudioStreamFormat.GetWaveFormatPCM(16000, 16, 1));
+            return AudioInputStream.CreatePushStream(AudioStreamFormat.GetWaveFormatPCM((uint)SamplesPerMillisecond * 1000, 16, 1));
         }
 
         private AudioCaptureDevice CreateAudioCaptureDevice()
@@ -102,15 +115,16 @@
             return new AudioCaptureDevice()
             {
                 Format = SampleFormat.Format16Bit,
-                SampleRate = 16000,
+                SampleRate = SamplesPerMillisecond * 1000,
                 Channels = 1,
-                DesiredFrameSize = 1600
+                DesiredFrameSize = SamplesPerMillisecond * _millisecondsPerFrame
             };
         }
 
         private void OnAudioFrameCaptured(object sender, NewFrameEventArgs e)
         {
             Interlocked.Increment(ref _framesCaptured);
+            Trace.WriteLine($"Sending {e.Signal.RawData.Length}");
             _audioInput.Write(e.Signal.RawData);
             _audio.Write(e.Signal.RawData, 0, e.Signal.RawData.Length);
             _audio.Flush();
@@ -145,6 +159,17 @@
                     _transcript.Flush();
                     break;
             }
+        }
+
+        private void OnSpeechStartDetected(object sender, RecognitionEventArgs e)
+        {
+            Console.Out.WriteLine("Speech start detected.");
+        }
+
+        private void OnRecognitionCancelled(object sender, SpeechRecognitionCanceledEventArgs e)
+        {
+            Console.Error.WriteLine($"Recognition cancelled: Session={e.SessionId}|{e.Reason}");
+            Console.Error.WriteLine(e.ErrorDetails);
         }
     }
 }
