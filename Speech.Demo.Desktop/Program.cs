@@ -1,6 +1,5 @@
 ﻿namespace Speech.Demo.Desktop
 {
-    using Accord.DirectSound;
     using System;
 
     class Program
@@ -20,6 +19,11 @@
                     Console.ReadKey();
                     Console.Out.WriteLine("\r\nTerminating...");
                     recognition.Stop();
+
+                    Console.Out.WriteLine($"        Audio grames captured: {recognition.FramesCaptured}");
+                    Console.Out.WriteLine($"Intermediate results received: {recognition.IntermediateResultsReceived}");
+                    Console.Out.WriteLine($"   Identical results received: {recognition.IdenticalResultsReceived}");
+                    Console.Out.WriteLine($"       Final results received: {recognition.FinalResultsReceived}");
                 }
             }
         }
