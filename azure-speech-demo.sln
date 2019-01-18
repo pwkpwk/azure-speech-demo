@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28010.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speech.Demo.Desktop", "Speech.Demo.Desktop\Speech.Demo.Desktop.csproj", "{9C3E9E6F-4BBD-4ABD-86F2-F797DFACB55B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextTranslation.Demo.Core", "TextTranslation.Demo.Core\TextTranslation.Demo.Core.csproj", "{097AAAFF-B4FC-4FFD-B246-278C7142321F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -15,6 +17,10 @@ Global
 		{9C3E9E6F-4BBD-4ABD-86F2-F797DFACB55B}.Debug|x64.Build.0 = Debug|x64
 		{9C3E9E6F-4BBD-4ABD-86F2-F797DFACB55B}.Release|x64.ActiveCfg = Release|x64
 		{9C3E9E6F-4BBD-4ABD-86F2-F797DFACB55B}.Release|x64.Build.0 = Release|x64
+		{097AAAFF-B4FC-4FFD-B246-278C7142321F}.Debug|x64.ActiveCfg = Debug|x64
+		{097AAAFF-B4FC-4FFD-B246-278C7142321F}.Debug|x64.Build.0 = Debug|x64
+		{097AAAFF-B4FC-4FFD-B246-278C7142321F}.Release|x64.ActiveCfg = Release|x64
+		{097AAAFF-B4FC-4FFD-B246-278C7142321F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

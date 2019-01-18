@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TextTranslation.Demo.Core": {
+      "commandName": "Project",
+      "commandLineArgs": "\"Once upon a time in the far-away forest lived a dark-green goblin named Peter Goblinski\" 841a4a6a823249aca570b6708bdbf4ba ru it pt en-US he"
+    }
+  }
+}

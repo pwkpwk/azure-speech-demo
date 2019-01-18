@@ -1,6 +1,5 @@
 ﻿namespace Speech.Demo.Desktop
 {
-    using Accord.DirectSound;
     using System;
 
     class Program
